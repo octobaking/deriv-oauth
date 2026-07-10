@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Deriv OAuth Callback</title>
+</head>
+<body>
+    <h3>Processing OAuth Callback...</h3>
+    <pre id="log"></pre>
+
+    <script>
+        const log = document.getElementById('log');
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const error = urlParams.get('error');
+
+        if (error) {
+            log.textContent = '❌ Error: ' + error;
+            return;
+        }
+
+        if (!code) {
+            log.textContent = '❌ No authorization code found';
+            return;
+        }
+
+        log.textContent = '✅ Authorization code received\n';
+
+        const clientId = '33N3kTh7JPwS7pJ7xkNkR';
+        const redirectUri = 'https://deriv-oauth-y1s5.vercel.app/callback';
+        const codeVerifier = sessionStorage.getItem('deriv_code_verifier');
+
+        if (!codeVerifier) {
+            log.textContent += '❌ No code_verifier found';
+            return;
+        }
+
+        fetch('https://auth.deriv.com/oauth2/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                grant_type: 'authorization_code',
+                client_id: clientId,
+                code: code,
+                code_verifier: codeVerifier,
+                redirect_uri: redirectUri
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) {
+                log.textContent += '❌ Token error: ' + JSON.stringify(data, null, 2);
+                return;
+            }
+            log.textContent += '\n🔑 YOUR ACCESS TOKEN:\n' + data.access_token;
+            log.textContent += '\n\n📝 Copy this token and save it.';
+        })
+        .catch(err => {
+            log.textContent += '❌ Error: ' + err.message;
+        });
+    </script>
+</body>
+</html>
