@@ -1,0 +1,6 @@
+{
+    "rewrites": [
+        { "source": "/", "destination": "/login.html" },
+        { "source": "/callback", "destination": "/callback.html" }
+    ]
+}
